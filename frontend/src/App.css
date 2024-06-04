@@ -1,0 +1,11 @@
+.home {
+  background: #fdc830;
+  background: -webkit-linear-gradient(to top, #f37335, #fdc830);
+  background: linear-gradient(to top, #f37335, #fdc830);
+}
+
+.movieDetail {
+  background: #ffb75e;
+  background: -webkit-linear-gradient(to right, #ed8f03, #ffb75e);
+  background: linear-gradient(to right, #ed8f03, #ffb75e);
+}
