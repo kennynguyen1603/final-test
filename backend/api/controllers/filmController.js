@@ -9,21 +9,57 @@ const buildSearchQuery = (search) => {
       $or: [
         { name: { $regex: search, $options: "i" } },
         { introduce: { $regex: search, $options: "i" } },
-        { year: { $regex: search, $options: "i" } },
-        { time: { $regex: search, $options: "i" } },
+        // { year: { $regex: search, $options: "i" } },
+        // { time: { $regex: search, $options: "i" } },
       ],
     });
+
+    //   const numericSearch = parseFloat(search);
+    //   if (!isNaN(numericSearch)) {
+    //     searchQuery.$and.push({
+    //       $or: [{ year: numericSearch }, { time: numericSearch }],
+    //     });
+    //   }
+    // }
   }
   return searchQuery.$and.length > 0 ? searchQuery : {};
+};
+
+const buildSortQuery = (sortBy) => {
+  const sortQuery = {};
+  if (sortBy) {
+    if (sortBy === "year_asc") {
+      sortQuery.year = 1;
+    } else if (sortBy === "year_desc") {
+      sortQuery.year = -1;
+    } else if (sortBy === "time_asc") {
+      sortQuery.time = 1;
+    } else if (sortBy === "time_desc") {
+      sortQuery.time = -1;
+    }
+  }
+  return sortQuery;
 };
 
 const filmController = {
   getAllFilms: async (req, res) => {
     try {
-      const films = await FilmModel.find();
+      const { search, sort } = req.query;
+      const searchQuery = buildSearchQuery(search);
+      const sortQuery = buildSortQuery(sort);
+      const page = parseInt(req.query.page) || 1;
+      const limit = parseInt(req.query.limit) || 10;
+      const skip = (page - 1) * limit;
+      const totalCount = await FilmModel.countDocuments();
+      const films = await FilmModel.find(searchQuery)
+        .skip(skip)
+        .limit(limit)
+        .sort(sortQuery);
       res.status(200).send({
         message: "Get all films successfully",
         data: films,
+        limit: limit,
+        total: totalCount,
         success: true,
       });
     } catch (error) {
@@ -35,20 +71,6 @@ const filmController = {
     }
   },
 
-  getFilms: async (req, res) => {
-    try {
-      const { search } = req.query;
-      const searchQuery = buildSearchQuery(search);
-      const films = await FilmModel.find(searchQuery).sort({ createdAt: -1 });
-      res.status(200).send({
-        message: "Get films successfully",
-        data: films,
-        success: true,
-      });
-    } catch (error) {
-      res.status(500).send({ message: error.message });
-    }
-  },
   createFilm: async (req, res) => {
     try {
       const { ID, name, time, year, imageThumbnail, introduce } = req.body;

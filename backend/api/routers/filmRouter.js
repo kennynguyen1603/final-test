@@ -15,8 +15,6 @@ FilmRouter.post(
   filmController.createFilm
 );
 
-FilmRouter.get("/search", filmController.getFilms);
-
 FilmRouter.put("/:id", filmController.updateFilm);
 
 FilmRouter.delete("/:id", filmController.deleteFilm);

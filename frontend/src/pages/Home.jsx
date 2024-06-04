@@ -5,21 +5,43 @@ import api from "../config/axios";
 import { Link } from "react-router-dom";
 const Home = () => {
   const [movies, setMovies] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
+  const [pageSize, setPageSize] = useState(4);
+  const [search, setSearch] = useState("");
+  const [sortBy, setSortBy] = useState("");
   useEffect(() => {
-    const fetchMovies = async () => {
+    const fetchMovies = async (page, search, sort) => {
       try {
-        const response = await api.get("/films");
+        const params = new URLSearchParams(search);
+        if (sort) {
+          params.set("sort", sort);
+        }
+        // const response = await api.get(
+        //   `/films?search=${params.toString().split("=")[0]}&sort=${
+        //     params.toString().split("=")[1]
+        //   }&page=${page}&limit=${pageSize}`
+        // );
+        const response = await api.get(
+          `/films?${params.toString()}&page=${page}&limit=${pageSize}`
+        );
         setMovies(response.data.data);
+        setTotalPages(Math.ceil(response.data.total / pageSize));
       } catch (error) {
         console.error(error);
       }
     };
-    fetchMovies();
-  }, []);
 
-  useEffect(() => {
-    console.log(movies);
-  }, [movies]);
+    fetchMovies(currentPage, search, sortBy);
+  }, [currentPage, search, pageSize, sortBy]);
+
+  const handleSearchChange = (e) => {
+    setSearch(e.target.value);
+  };
+
+  const handleSortChange = (e) => {
+    setSortBy(e.target.value);
+  };
 
   return (
     <div className="home w-full h-screen">
@@ -40,19 +62,27 @@ const Home = () => {
             <input
               type="text"
               placeholder="Search"
+              value={search}
+              onChange={handleSearchChange}
               className="border border-slate-100 p-2 rounded-lg focus:outline-none"
             />
             <IoMdSearch className="absolute right-2 top-2 text-2xl" />
           </div>
-          {/* <a href="/movie/1" className="text-blue-500">
-            Movie 1
-          </a> */}
         </nav>
-        <div className="p-4">
-          <p className="text-xl text-center font-semibold ">
+        <div className="p-2">
+          <div className="absolute top-[15%] right-[4%]">
+            <select value={sortBy} onChange={handleSortChange}>
+              <option value="">-- Sort by --</option>
+              <option value="year_asc">Year (Low to High)</option>
+              <option value="year_desc">Year (High to Low)</option>
+              <option value="time_asc">Time (Low to High)</option>
+              <option value="time_desc">Time (High to Low)</option>
+            </select>
+          </div>
+          <p className="text-xl text-center font-semibold mt-2">
             Most Popular Movies
           </p>
-          <div className="listMovie grid grid-cols-4 p-4">
+          <div className="listMovie grid grid-cols-4 p-2">
             {movies.map((movie) => (
               <div
                 key={movie.ID}
@@ -62,7 +92,7 @@ const Home = () => {
                   <img
                     src={movie.image}
                     alt={movie.name}
-                    className="w-full h-[260px] object-contain rounded-sm"
+                    className="w-full h-60 object-contain rounded-sm"
                   />
                 </Link>
                 <p className="text-normal font-semibold">{movie.name}</p>
@@ -71,6 +101,29 @@ const Home = () => {
                 </p>
               </div>
             ))}
+          </div>
+        </div>
+        <div className="absolute bottom-5 left-[50%] translate-x-[-50%]">
+          <div className="pagination flex gap-3 justify-center ">
+            <button
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className="font-semibold"
+            >
+              Prev
+            </button>
+            <span className="rounded-full px-2 bg-neutral-300">
+              {currentPage}
+            </span>
+            <button
+              onClick={() =>
+                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+              }
+              disabled={currentPage === totalPages}
+              className="font-semibold"
+            >
+              Next
+            </button>
           </div>
         </div>
       </div>
