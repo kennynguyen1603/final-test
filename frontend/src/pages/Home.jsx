@@ -10,21 +10,21 @@ const Home = () => {
   const [pageSize, setPageSize] = useState(4);
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState("");
+
   useEffect(() => {
     const fetchMovies = async (page, search, sort) => {
       try {
-        const params = new URLSearchParams(search);
+        const params = new URLSearchParams();
+        if (search) {
+          params.set("search", search);
+        }
         if (sort) {
           params.set("sort", sort);
         }
-        // const response = await api.get(
-        //   `/films?search=${params.toString().split("=")[0]}&sort=${
-        //     params.toString().split("=")[1]
-        //   }&page=${page}&limit=${pageSize}`
-        // );
-        const response = await api.get(
-          `/films?${params.toString()}&page=${page}&limit=${pageSize}`
-        );
+        params.set("page", page);
+        params.set("limit", pageSize);
+
+        const response = await api.get(`/films?${params.toString()}`);
         setMovies(response.data.data);
         setTotalPages(Math.ceil(response.data.total / pageSize));
       } catch (error) {

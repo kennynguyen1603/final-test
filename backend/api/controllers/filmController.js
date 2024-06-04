@@ -9,18 +9,8 @@ const buildSearchQuery = (search) => {
       $or: [
         { name: { $regex: search, $options: "i" } },
         { introduce: { $regex: search, $options: "i" } },
-        // { year: { $regex: search, $options: "i" } },
-        // { time: { $regex: search, $options: "i" } },
       ],
     });
-
-    //   const numericSearch = parseFloat(search);
-    //   if (!isNaN(numericSearch)) {
-    //     searchQuery.$and.push({
-    //       $or: [{ year: numericSearch }, { time: numericSearch }],
-    //     });
-    //   }
-    // }
   }
   return searchQuery.$and.length > 0 ? searchQuery : {};
 };

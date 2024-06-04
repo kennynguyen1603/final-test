@@ -3,10 +3,12 @@ import { useParams } from "react-router-dom";
 import api from "../config/axios";
 import { IoMdClose } from "react-icons/io";
 import { FaPlay } from "react-icons/fa";
+import { MdOutlineModeEdit } from "react-icons/md";
 const MovieDetail = () => {
   const [movie, setMovie] = useState({});
   const { films } = useParams();
-  console.log("🚀 ~ MovieDetail ~ movieId:", films);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [isEdit, setIsEdit] = useState(false);
   useEffect(() => {
     const fetchMovie = async () => {
       try {
@@ -22,6 +24,21 @@ const MovieDetail = () => {
   const backhome = () => {
     window.location.href = "/";
   };
+
+  const handleSetEditImage = () => {
+    setIsEdit(true);
+  };
+
+  const handleSaveImage = async () => {
+    try {
+      await api.put(`/films/${films}`, { image: selectedImage });
+      setMovie({ ...movie, image: selectedImage });
+      setIsEdit(false);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   return (
     <div className="movieDetail w-full h-screen">
       <div className="container mx-auto w-[34%] h-[41vh] bg-white absolute top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] rounded-xl flex flex-col">
@@ -33,6 +50,12 @@ const MovieDetail = () => {
         </button>
         <div className="p-4 flex flex-col justify-start items-center">
           <div className="movieDetail__poster absolute top-[-30px] left-[-30px]">
+            <button
+              className="absolute right-[-10px] top-[-15px] text-xl hover:bg-orange-50 p-2 rounded-full"
+              onClick={handleSetEditImage}
+            >
+              <MdOutlineModeEdit />
+            </button>
             <img
               src={movie.image}
               alt={movie.name}
@@ -50,6 +73,36 @@ const MovieDetail = () => {
             <FaPlay />
             <span>play movie</span>
           </button>
+          {isEdit && (
+            <div className="editImage absolute top-0 left-0 w-full h-full bg-black bg-opacity-50 flex justify-center items-center">
+              <div className="editImage__content bg-white p-4 rounded-xl relative">
+                <button
+                  className="text-xl absolute top-0 right-0"
+                  onClick={() => setIsEdit(false)}
+                >
+                  <IoMdClose />
+                </button>
+                <input
+                  type="text"
+                  placeholder="Image URL"
+                  value={selectedImage}
+                  onChange={(e) => setSelectedImage(e.target.value)}
+                  className="border border-slate-100 p-2 rounded-lg focus:outline-none w-full"
+                />
+                <img
+                  src={selectedImage}
+                  alt="edit"
+                  className="w-64 h-96 object-cover rounded-lg mt-2"
+                />
+                <button
+                  className="btn__editImage uppercase text-white bg-[#ed8f03] p-2 rounded-lg mt-2"
+                  onClick={() => handleSaveImage()}
+                >
+                  Save
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
